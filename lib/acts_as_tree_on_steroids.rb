@@ -104,6 +104,22 @@ module Fortytwo #:nodoc:
           @descendants
         end
 
+      	# returns only the ids of the descendants of this node 
+      	# if tree is true, the descendants are returned order by the hierarchical level (like an expanded tree), other wise nodes are order by their level 
+      	# so you get level 0, level 1, level 2 and so on.
+      	# if reload is true the tree is reloaded
+              def descendants_ids(tree=false,reload=false)
+                return [] if is_leaf? || self.id_path.blank?
+                #when tree is true, the descendants are collected in the same order a tree scan would produce
+                if tree
+                  @descendants_ids = self.class.find(:all, :conditions => "id_path like '#{self.id_path},%'", :order => "id_path asc") if @descendants_ids.nil? || reload
+                else
+                  @descendants_ids = self.class.find(:all, :conditions => "id_path like '#{self.id_path},%'", :order => "level asc, id asc") if @descendants_ids.nil? || reload
+                end
+
+                @descendants_ids.map{|x| x.id }.sort
+              end
+              
         #returns descendant leafs
         def leafs(reload=false)
           return nil if is_leaf? || self.id_path.blank?
